@@ -67,6 +67,9 @@ class hashespwnagotchi(plugins.Plugin):
             with self.lock:
                 self._process_stale_pcaps(handshake_dir)
                 
+    def on_bored(self, agent):
+        self._report_handshakes(agent)
+          
     def on_internet_available(self, agent):
         self._report_handshakes(agent)
 
