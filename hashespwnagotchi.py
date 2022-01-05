@@ -290,7 +290,9 @@ class hashespwnagotchi(plugins.Plugin):
                                 reported.append(handshake)
                                 self.report.update(data={'reported': reported})
                         finally:
-                            continue
+                            pass
+                        
+                        continue
                         
 
                 display.on_normal()
