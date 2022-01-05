@@ -246,7 +246,7 @@ class hashespwnagotchi(plugins.Plugin):
             
         
     def _report_handshakes(self, agent):
-        if not self.ready or self.lock.locked():
+        if not self.ready or self.lock.locked() or not self._connected_to_internet():
             return
         
         with self.lock:
@@ -266,7 +266,7 @@ class hashespwnagotchi(plugins.Plugin):
                     display.on_uploading(f"hashes.pw ({idx + 1}/{len(handshake_new)})")
 
                     try:
-                        #logging.info("about to call eapool")
+                        logging.info("sending contents of %s to hashes.pw" % handshake)
                         self._upload_EAPOL(handshake, config['main']['name'])
                         reported.append(handshake)
                         self.report.update(data={'reported': reported})
@@ -336,3 +336,10 @@ class hashespwnagotchi(plugins.Plugin):
             return file.split(".")[0]
         else:
             return file.split(".")[0].replace(essid + "_", "")
+    
+    def _connected_to_internet(self):
+        try:
+            r = requests.get('https://google.com', timeout=5)
+            return True
+        except (requests.ConnectionError, requests.Timeout) as exception:
+            return False
