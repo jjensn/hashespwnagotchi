@@ -62,6 +62,12 @@ class hashespwnagotchi(plugins.Plugin):
         handshake_dir = config['bettercap']['handshakes']
         self.uuid = str(uuid.uuid5(uuid.NAMESPACE_OID, config['main']['name']))
         
+        try:
+            self.report = StatusFile('/root/.hashespw_uploads', data_format='json')
+        except JSONDecodeError:
+            os.remove("/root/.hashespw_uploads")
+            self.report = StatusFile('/root/.hashespw_uploads', data_format='json')
+            
         if 'interval' not in self.options or not (self.status.newer_then_hours(self.options['interval'])):
             logging.info('[hashie] Starting batch conversion of pcap files')
             with self.lock:
@@ -245,6 +251,13 @@ class hashespwnagotchi(plugins.Plugin):
         r = self._post("pwnagotchi", payload)
         
         if r.status_code != 200 and r.status_code != 204:
+            try: 
+                decode_error = json.loads(r.content)
+                if decode_error['value'][0] == 'already exists':
+                    return
+            except Exception as e:
+                logging.warn(e)
+            
             raise ValueError("failure to create new handshake on hashes.pw: %s" % r.content)
             
         
@@ -283,16 +296,7 @@ class hashespwnagotchi(plugins.Plugin):
                         continue
                     except ValueError as v_e:
                         logging.warn("failure to send contents of %s to hashes.pw", handshake)
-                        logging.warn(v_e)
-                        try: 
-                            decode_error = json.loads(str(v_e))
-                            if decode_error['value'][0] == 'already exists':
-                                reported.append(handshake)
-                                self.report.update(data={'reported': reported})
-                                logging.info("added %s to the report to silence future errors", handshake)
-                        finally:
-                            pass
-                        
+                        logging.warn(v_e)                        
                         continue
                         
 
