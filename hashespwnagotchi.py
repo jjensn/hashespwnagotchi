@@ -285,10 +285,11 @@ class hashespwnagotchi(plugins.Plugin):
                         logging.warn("failure to send contents of %s to hashes.pw", handshake)
                         logging.warn(v_e)
                         try: 
-                            decode_error = json.loads(v_e)
+                            decode_error = json.loads(str(v_e))
                             if decode_error['value'][0] == 'already exists':
                                 reported.append(handshake)
                                 self.report.update(data={'reported': reported})
+                                logging.info("added %s to the report to silence future errors", handshake)
                         finally:
                             pass
                         
